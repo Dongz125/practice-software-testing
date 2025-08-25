@@ -1,0 +1,212 @@
+{
+	"info": {
+		"_postman_id": "247712ee-de7d-409c-a9da-5713b4263c0b",
+		"name": "HW7",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "47777669"
+	},
+	"item": [
+		{
+			"name": "localhost:8091/products/search?q={{q}}",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Lấy giá trị query parameter từ CSV\r",
+							"const query = pm.iterationData.get(\"query\") || \"\";\r",
+							"\r",
+							"pm.environment.set(\"q\", query);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Lấy giá trị status code mong đợi từ CSV\r",
+							"const expectedStatus = parseInt(pm.iterationData.get(\"expectedStatus\"));\r",
+							"\r",
+							"// Kiểm tra status code\r",
+							"pm.test(\"Status code is correct\", function () {\r",
+							"    pm.response.to.have.status(expectedStatus);\r",
+							"});\r",
+							"\r",
+							"// Kiểm tra response có chứa data array\r",
+							"pm.test(\"Response contains data array\", function () {\r",
+							"    pm.expect(pm.response.json()).to.have.property('data');\r",
+							"    pm.expect(pm.response.json().data).to.be.an('array');\r",
+							"});\r",
+							"\r",
+							"// (Tùy chọn) Kiểm tra tên sản phẩm chứa query\r",
+							"pm.test(\"Response name contains query\", function () {\r",
+							"    const query = pm.iterationData.get(\"query\").replace(/\"/g, \"\"); // Loại bỏ dấu ngoặc nếu có\r",
+							"    const responseData = pm.response.json().data;\r",
+							"    responseData.forEach(item => {\r",
+							"        pm.expect(item.name.toLowerCase()).to.include(query.toLowerCase());\r",
+							"    });\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8091/products/search?q={{q}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8091",
+					"path": [
+						"products",
+						"search"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "{{q}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "New Request",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let accountName = pm.iterationData.get(\"account_name\");\r",
+							"let accountNumber = pm.iterationData.get(\"account_number\");\r",
+							"\r",
+							"if (accountName === \"null\") {\r",
+							"    pm.variables.set(\"account_name\", null);\r",
+							"}\r",
+							"\r",
+							"if (accountNumber === \"null\") {\r",
+							"    pm.variables.set(\"account_number\", null);\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"method\": \"Credit Card\",\r\n  \"account_name\": null,\r\n  \"account_number\": null\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8091/payment/check",
+					"host": [
+						"localhost"
+					],
+					"port": "8091",
+					"path": [
+						"payment",
+						"check"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "filter-product",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const byCategory = pm.iterationData.get(\"by_category\");\r",
+							"const byBrand = pm.iterationData.get(\"by_brand\");\r",
+							"const between = pm.iterationData.get(\"between\");\r",
+							"const sort = pm.iterationData.get(\"sort\");\r",
+							"const page = pm.iterationData.get(\"page\");\r",
+							"\r",
+							"pm.environment.set(\"by_category\", byCategory || \"\");\r",
+							"pm.environment.set(\"by_brand\", byBrand || \"\");\r",
+							"pm.environment.set(\"between\", between || \"\");\r",
+							"pm.environment.set(\"sort\", sort || \"\");\r",
+							"pm.environment.set(\"page\", page || \"1\"); // Default to 1 if empty"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8091/products?sort={{sort}}&between={{between}}&by_category={{by_category}}&by_brand={{by_brand}}&page={{page}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8091",
+					"path": [
+						"products"
+					],
+					"query": [
+						{
+							"key": "sort",
+							"value": "{{sort}}"
+						},
+						{
+							"key": "between",
+							"value": "{{between}}"
+						},
+						{
+							"key": "by_category",
+							"value": "{{by_category}}"
+						},
+						{
+							"key": "by_brand",
+							"value": "{{by_brand}}"
+						},
+						{
+							"key": "page",
+							"value": "{{page}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

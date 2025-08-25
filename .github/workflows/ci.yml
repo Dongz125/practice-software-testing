@@ -1,0 +1,77 @@
+name: API CI with Postman
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "18"
+
+            - name: Install Newman
+              run: npm install -g newman newman-reporter-htmlextra
+
+            - name: Start Docker services
+              run: docker compose up -d
+
+            - name: Wait for services to be ready
+              run: sleep 300 # 5 phút
+
+            - name: Run migrations and seed
+              run: docker compose exec -T laravel-api php artisan migrate:fresh --seed
+
+            # Request 1: Search products
+            - name: Run Search Tests
+              run: |
+                  newman run collection.json \
+                    --iteration-data data/search.csv \
+                    --reporters cli,htmlextra \
+                    --reporter-htmlextra-export reports/search-report.html \
+                    --reporter-htmlextra-darkTheme \
+                    --suppress-exit-code
+
+            # Request 2: Payment check
+            - name: Run Payment Tests
+              run: |
+                  newman run collection.json \
+                    --iteration-data data/payment.csv \
+                    --reporters cli,htmlextra \
+                    --reporter-htmlextra-export reports/payment-report.html \
+                    --reporter-htmlextra-darkTheme \
+                    --suppress-exit-code
+
+            # Request 3: Filter product
+            - name: Run Filter Tests
+              run: |
+                  newman run collection.json \
+                    --iteration-data data/filter.csv \
+                    --reporters cli,htmlextra \
+                    --reporter-htmlextra-export reports/filter-report.html \
+                    --reporter-htmlextra-darkTheme \
+                    --suppress-exit-code
+
+            - name: Upload reports
+              uses: actions/upload-artifact@v4
+              with:
+                  name: postman-reports
+                  path: reports/
+
+            # Debug logs nếu có lỗi
+            - name: Show Laravel logs
+              if: failure()
+              run: docker compose logs laravel-api
+
+            - name: Show DB logs
+              if: failure()
+              run: docker compose logs db
