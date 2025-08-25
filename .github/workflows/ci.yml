@@ -9,70 +9,72 @@ on:
 jobs:
     test:
         runs-on: ubuntu-22.04
-    steps:
-        - name: Checkout ⚙️
-          uses: actions/checkout@v4
+        steps:
+            - name: Checkout ⚙️
+              uses: actions/checkout@v4
 
-        - name: Start containers 🐳
-          run: |
-              export DISABLE_LOGGING=true
-              docker compose -f docker-compose.yml up -d --force-recreate
+            - name: Start containers 🐳
+              run: |
+                  export DISABLE_LOGGING=true
+                  docker compose -f docker-compose.yml up -d --force-recreate
 
-        - name: Sleep for 60 seconds
-          run: sleep 60s
-          shell: bash
+            - name: Sleep for 60 seconds
+              run: sleep 60s
+              shell: bash
 
-        - name: Create & Seed database 🌱
-          run: |
-              docker compose exec -T laravel-api php artisan migrate:refresh --seed
+            - name: Create & Seed database 🌱
+              run: |
+                  docker compose exec -T laravel-api php artisan migrate:refresh --seed
 
-        - name: Setup Node.js
-          uses: actions/setup-node@v4
-          with:
-              node-version: "18"
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "18"
 
-        - name: Install Newman
-          run: npm install -g newman newman-reporter-htmlextra
+            - name: Install Newman
+              run: npm install -g newman newman-reporter-htmlextra
 
-        # Request 1: Search products
-        - name: Run Search Tests
-          run: |
-              newman run collection.json \
-                --iteration-data data/search.csv \
-                --reporters cli,htmlextra \
-                --reporter-htmlextra-export reports/search-report.html \
-                --reporter-htmlextra-darkTheme \
-                --suppress-exit-code
-        # Request 2: Payment check
-        - name: Run Payment Tests
-          run: |
-              newman run collection.json \
-                --iteration-data data/payment.csv \
-                --reporters cli,htmlextra \
-                --reporter-htmlextra-export reports/payment-report.html \
-                --reporter-htmlextra-darkTheme \
-                --suppress-exit-code
-        # Request 3: Filter product
-        - name: Run Filter Tests
-          run: |
-              newman run collection.json \
-                --iteration-data data/filter.csv \
-                --reporters cli,htmlextra \
-                --reporter-htmlextra-export reports/filter-report.html \
-                --reporter-htmlextra-darkTheme \
-                --suppress-exit-code
+            # Request 1: Search products
+            - name: Run Search Tests
+              run: |
+                  newman run collection.json \
+                    --iteration-data data/search.csv \
+                    --reporters cli,htmlextra \
+                    --reporter-htmlextra-export reports/search-report.html \
+                    --reporter-htmlextra-darkTheme \
+                    --suppress-exit-code
 
-        - name: Upload reports
-          uses: actions/upload-artifact@v4
-          with:
-              name: postman-reports
-              path: reports/
+            # Request 2: Payment check
+            - name: Run Payment Tests
+              run: |
+                  newman run collection.json \
+                    --iteration-data data/payment.csv \
+                    --reporters cli,htmlextra \
+                    --reporter-htmlextra-export reports/payment-report.html \
+                    --reporter-htmlextra-darkTheme \
+                    --suppress-exit-code
+                    
+            # Request 3: Filter product
+            - name: Run Filter Tests
+              run: |
+                  newman run collection.json \
+                    --iteration-data data/filter.csv \
+                    --reporters cli,htmlextra \
+                    --reporter-htmlextra-export reports/filter-report.html \
+                    --reporter-htmlextra-darkTheme \
+                    --suppress-exit-code
 
-        # Debug logs nếu có lỗi
-        - name: Show Laravel logs
-          if: failure()
-          run: docker compose logs laravel-api
+            - name: Upload reports
+              uses: actions/upload-artifact@v4
+              with:
+                  name: postman-reports
+                  path: reports/
 
-        - name: Show DB logs
-          if: failure()
-          run: docker compose logs db
+            # Debug logs nếu có lỗi
+            - name: Show Laravel logs
+              if: failure()
+              run: docker compose logs laravel-api
+
+            - name: Show DB logs
+              if: failure()
+              run: docker compose logs db
