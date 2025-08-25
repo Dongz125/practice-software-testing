@@ -34,15 +34,6 @@ jobs:
         - name: Install Newman
           run: npm install -g newman newman-reporter-htmlextra
 
-        - name: Start Docker services
-          run: docker compose up -d
-
-        - name: Wait for services to be ready
-          run: sleep 300 # 5 phút
-
-        - name: Run migrations and seed
-          run: docker compose exec -T laravel-api php artisan migrate:fresh --seed
-
         # Request 1: Search products
         - name: Run Search Tests
           run: |
