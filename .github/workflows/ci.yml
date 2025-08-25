@@ -43,7 +43,6 @@ jobs:
                 --reporter-htmlextra-export reports/search-report.html \
                 --reporter-htmlextra-darkTheme \
                 --suppress-exit-code
-
         # Request 2: Payment check
         - name: Run Payment Tests
           run: |
@@ -53,7 +52,6 @@ jobs:
                 --reporter-htmlextra-export reports/payment-report.html \
                 --reporter-htmlextra-darkTheme \
                 --suppress-exit-code
-
         # Request 3: Filter product
         - name: Run Filter Tests
           run: |
